@@ -562,23 +562,6 @@
             });
         }
 
-        // Инициализация состояния групп при загрузке страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            // Можно добавить кнопки для управления всеми группами
-            addGlobalGroupControls();
-        });
-
-        function addGlobalGroupControls() {
-            const header = document.querySelector('header');
-            const controls = document.createElement('div');
-            controls.className = 'global-group-controls';
-            controls.innerHTML = `
-                <button class="group-action-btn" onclick="toggleAllGroups(true)">Свернуть все</button>
-                <button class="group-action-btn" onclick="toggleAllGroups(false)">Развернуть все</button>
-            `;
-            header.appendChild(controls);
-        }
-
       function toggleTasks(header) {
         const tasks = header.nextElementSibling;
         if (!tasks) return;
