@@ -453,7 +453,6 @@
                 <span class="account-label">Группа:</span>
                 <span class="account-value">
                         <select class="group-selector" onchange="updateAccountGroup('{{ account.username }}', this.value)" onclick="event.stopPropagation()">
-                            <option value="null" {% if group_name == "Общая" %}selected{% endif %}>Общая</option>
                             {% for group_id, name in groups %}
                             <option value="{{ group_id }}" {% if group_name == name %}selected{% endif %}>{{ name }}</option>
                             {% endfor %}

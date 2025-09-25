@@ -88,4 +88,49 @@ echo.
 echo %GREEN%Repository updated successfully!%RESET%
 echo %CYAN%Current directory: %CD%%RESET%
 echo.
+
+:: Рестарт Docker контейнеров для обновления кода
+echo %MAGENTA%=== Restarting Docker containers to apply updates ===%RESET%
+echo %YELLOW%[5/5]%RESET% %CYAN%Restarting Docker containers...%RESET%
+
+:: Проверка наличия Docker Compose
+docker-compose --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo %YELLOW%Docker Compose not found, trying docker compose...%RESET%
+    docker compose version >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo %RED%Docker Compose not available. Please install Docker Compose.%RESET%
+        echo %YELLOW%Containers need to be restarted manually to apply updates.%RESET%
+        echo.
+        pause
+        exit /b 1
+    ) else (
+        set DOCKER_COMPOSE_CMD=docker compose
+    )
+) else (
+    set DOCKER_COMPOSE_CMD=docker-compose
+)
+
+:: Рестарт контейнеров
+echo %CYAN%Stopping containers...%RESET%
+%DOCKER_COMPOSE_CMD% down
+
+echo %CYAN%Starting containers with updated code...%RESET%
+%DOCKER_COMPOSE_CMD% up -d
+
+if %errorlevel% neq 0 (
+    echo %RED%Failed to restart Docker containers.%RESET%
+    echo %YELLOW%Please check Docker configuration and try again.%RESET%
+    echo.
+    pause
+    exit /b 1
+) else (
+    echo %GREEN%Docker containers restarted successfully!%RESET%
+    echo %CYAN%New code is now running in containers.%RESET%
+)
+
+echo.
+echo %GREEN%=== Update completed successfully! ===%RESET%
+echo %CYAN%Repository updated and Docker containers restarted.%RESET%
+echo.
 pause
