@@ -165,14 +165,18 @@
 
        .group-container {
             margin-bottom: 30px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
         }
       
         .group-header {
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 5px;
-            border-bottom: 2px solid var(--primary);
+        padding: 15px;
+        background-color: #f8f9fa;
+        cursor: pointer;
+        border-bottom: 1px solid #e0e0e0;
         }
       
         .group-title {
@@ -181,6 +185,16 @@
             color: var(--primary);
             margin-right: 15px;
         }
+  
+      .group-toggle {
+        margin-right: 10px;
+        font-size: 1.1em;
+        transition: transform 0.3s;
+      }
+  
+      .group-toggle.collapsed {
+        transform: rotate(-90deg);
+      }
       
         .group-actions {
             margin-left: auto;
@@ -209,6 +223,11 @@
         background: white;
         color: #333;
         }
+  
+      .group-content {
+        padding: 15px;
+        background: white;
+      }
       
         .new-group-form {
             display: flex;
@@ -364,20 +383,17 @@
 
         <!-- Отображение групп и аккаунтов -->
         {% for group_name, accounts in accounts_data.items() %}
-        <div class="group-container">
-            <div class="group-header">
+        <div class="group-container" data-group-id="{{ group_id }}">
+            <div class="group-header" onclick="toggleGroup(this)">
+                <span class="group-toggle">▶</span>
                 <div class="group-title">{{ group_name }}</div>
                 {% if group_name != "Общая" %}
                 <div class="group-actions">
-                    {% for group_id, name in groups %}
-                        {% if name == group_name %}
-                            <button class="group-action-btn delete" onclick="deleteGroup({{ group_id }})">Удалить группу</button>
-                        {% endif %}
-                    {% endfor %}
+                    <button class="group-action-btn delete" onclick="event.stopPropagation(); deleteGroup({{ group_id }})">Удалить группу</button>
                 </div>
                 {% endif %}
             </div>
-
+            <div class="group-content">
       {% for account in accounts %}
       <div class="account-card">
         <div class="account-header" onclick="toggleTasks(this)">
@@ -394,8 +410,6 @@
                   </span>
               </div>
               
-
-             
               <div class="account-row">
                   {% if account.characters %}
                     <span class="account-label">Персонаж для перевода:</span>
@@ -453,8 +467,8 @@
                 <span class="account-label">Группа:</span>
                 <span class="account-value">
                         <select class="group-selector" onchange="updateAccountGroup('{{ account.username }}', this.value)" onclick="event.stopPropagation()">
-                            {% for group_id, name in groups %}
-                            <option value="{{ group_id }}" {% if group_name == name %}selected{% endif %}>{{ name }}</option>
+                                        {% for g_id, g_name in groups %}
+                                        <option value="{{ g_id }}" {% if group_name == g_name %}selected{% endif %}>{{ g_name }}</option>
                             {% endfor %}
                         </select>
                 </span>
@@ -511,10 +525,60 @@
             </div>
             {% endfor %}
       </div>
+        </div>
       {% endfor %}
     </div>
 
     <script>
+        function toggleGroup(header) {
+            const container = header.parentElement;
+            const content = container.querySelector('.group-content');
+            const toggle = header.querySelector('.group-toggle');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                toggle.classList.remove('collapsed');
+            } else {
+                content.style.display = 'none';
+                toggle.classList.add('collapsed');
+            }
+        }
+
+        // Функция для сворачивания/разворачивания всех групп
+        function toggleAllGroups(collapse) {
+            const groups = document.querySelectorAll('.group-container');
+            groups.forEach(group => {
+                const header = group.querySelector('.group-header');
+                const content = group.querySelector('.group-content');
+                const toggle = header.querySelector('.group-toggle');
+                
+                if (collapse) {
+                    content.style.display = 'none';
+                    toggle.classList.add('collapsed');
+                } else {
+                    content.style.display = 'block';
+                    toggle.classList.remove('collapsed');
+                }
+            });
+        }
+
+        // Инициализация состояния групп при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Можно добавить кнопки для управления всеми группами
+            addGlobalGroupControls();
+        });
+
+        function addGlobalGroupControls() {
+            const header = document.querySelector('header');
+            const controls = document.createElement('div');
+            controls.className = 'global-group-controls';
+            controls.innerHTML = `
+                <button class="group-action-btn" onclick="toggleAllGroups(true)">Свернуть все</button>
+                <button class="group-action-btn" onclick="toggleAllGroups(false)">Развернуть все</button>
+            `;
+            header.appendChild(controls);
+        }
+
       function toggleTasks(header) {
         const tasks = header.nextElementSibling;
         if (!tasks) return;
